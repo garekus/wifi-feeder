@@ -10,7 +10,8 @@
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 
-#include "credentials.h"
+#include <credentials.h>
+#include <client_html.h>
 
 
 #define BUTTON_PIN     D7
@@ -53,7 +54,7 @@ void saveWifiConfig(const String& ssid, const String& pwd) {
 }
 
 void handleRoot() {
-  server.send(200, "text/plain", "ESP8266 Config Server");
+  server.send(200, "text/html", clientHtml);
 }
 
 void handleMotorOn() {
@@ -127,9 +128,11 @@ void handleWiFiPost() {
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH); // LED off
+  digitalWrite(MOTOR_PIN, LOW); // Motor off
 
   if (!LittleFS.begin()) {
     Serial.println("Failed to mount LittleFS");
@@ -178,8 +181,8 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   server.on("/", handleRoot);
-  server.on("/motor_on", handleMotorOn);
-  server.on("/motor_off", handleMotorOff);
+  server.on("/motorOn", handleMotorOn);
+  server.on("/motorOff", handleMotorOff);
   server.on("/wifi", HTTP_POST, handleWiFiPost);
   server.begin();
   Serial.println("HTTP server started");
