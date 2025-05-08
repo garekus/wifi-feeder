@@ -31,9 +31,8 @@ ESP8266WebServer server(80);
 const char* config_path = "/wifi.json";
 
 // Add these global variables
-const int UTC_OFFSET = 0; // UTC timezone (0 for UTC)
-const int UTC_FEED_HOUR = 13; // 1PM UTC
-const int UTC_FEED_MINUTE = 0;
+const int FEED_HOUR = 19; // 1PM
+const int FEED_MINUTE = 36;
 bool motorRanToday = false;
 time_t lastFeedTime = 0;
 
@@ -293,11 +292,11 @@ void loop() {
   time_t now = time(nullptr);
   if (now > 0) { // Valid time received
     struct tm timeinfo;
-    gmtime_r(&now, &timeinfo);
+    localtime_r(&now, &timeinfo);
     
     // Check if it's feed time (1PM UTC) and we haven't fed today
-    if (timeinfo.tm_hour == UTC_FEED_HOUR && 
-        timeinfo.tm_min == UTC_FEED_MINUTE && 
+    if (timeinfo.tm_hour == FEED_HOUR && 
+        timeinfo.tm_min == FEED_MINUTE && 
         !motorRanToday) {
       
       Serial.println("It's feeding time!");
@@ -305,7 +304,7 @@ void loop() {
       motorRanToday = true;
       lastFeedTime = now;
       
-    } else if (timeinfo.tm_hour != UTC_FEED_HOUR || timeinfo.tm_min != UTC_FEED_MINUTE) {
+    } else if (timeinfo.tm_hour != FEED_HOUR || timeinfo.tm_min != FEED_MINUTE) {
       // Reset the flag when we're not in the feeding minute
       motorRanToday = false;
     }
