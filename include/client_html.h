@@ -51,8 +51,7 @@ const char *clientHtml = R""""(
 <body>
     <h1>ESP8266 Motor Control</h1>
     <div class="btn-container">
-        <button class="btn" onclick="turnMotorOn()">Turn Motor ON</button>
-        <button class="btn btn-off" onclick="turnMotorOff()">Turn Motor OFF</button>
+        <button class="btn" onclick="turnMotorRun()">Run</button>
     </div>
     
     <div class="response-container">
@@ -62,20 +61,7 @@ const char *clientHtml = R""""(
     <script>
         function turnMotorOn() {
             document.getElementById('responseText').textContent = 'Sending request...';
-            fetch('/motorOn')
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById('responseText').textContent = data;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('responseText').textContent = 'Error: ' + error.message;
-                });
-        }
-
-        function turnMotorOff() {
-            document.getElementById('responseText').textContent = 'Sending request...';
-            fetch('/motorOff')
+            fetch('/motorRun')
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('responseText').textContent = data;

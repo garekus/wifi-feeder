@@ -14,12 +14,17 @@
 #include <client_html.h>
 
 
-#define BUTTON_PIN     D7
+#define PROBE_PIN     D7
 #define MOTOR_PIN     D6
 
 
 String current_ssid = my_default_ssid;
 String current_password = my_default_password;
+
+IPAddress staticIP(192, 168, 50, 201);
+IPAddress gateway(192, 168, 50, 1);     // Default gateway (router) IP
+IPAddress subnet(255, 255, 255, 0);     // Subnet mask
+IPAddress dns1(8, 8, 8, 8);
 
 ESP8266WebServer server(80);
 const char* config_path = "/wifi.json";
@@ -53,21 +58,88 @@ void saveWifiConfig(const String& ssid, const String& pwd) {
   }
 }
 
+wl_status_t wifiConnect(ESP8266WiFiClass &theWifi, String ssid, String pwd, int maxRetry = 20) {
+  theWifi.config(staticIP, gateway, subnet, dns1);
+  theWifi.begin(ssid.c_str(), pwd.c_str());
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry < maxRetry) {
+    delay(500);
+    Serial.print(".");
+    retry++;
+  }
+
+  return WiFi.status();
+}
+
+
 void handleRoot() {
   server.send(200, "text/html", clientHtml);
 }
 
-void handleMotorOn() {
-  digitalWrite(LED_BUILTIN, LOW);
-  digitalWrite(MOTOR_PIN, HIGH);
-  server.send(200, "text/plain", "Motor is ON");
+void runMotor() {
+  digitalWrite(MOTOR_PIN, HIGH);   // Turn motor on
+  
+  // Debounce variables
+  const int debounceDelay = 50;    // Debounce time in milliseconds
+  int probeState = LOW;            // Current state of the probe pin
+  int lastProbeState = LOW;        // Previous state of the probe pin
+  unsigned long lastDebounceTime = 0;  // Last time the probe pin was toggled
+  
+  // State tracking variables
+  bool sawHigh = false;
+  bool sawLow = false;
+  
+  // Wait for the probe pin to go HIGH->LOW->HIGH
+  while (!(sawHigh && sawLow && probeState == HIGH)) {
+    // Read the current state of the probe pin
+    int reading = digitalRead(PROBE_PIN);
+    
+    // If the reading changed, reset the debounce timer
+    if (reading != lastProbeState) {
+      lastDebounceTime = millis();
+    }
+    
+    // If the reading has been stable for longer than the debounce delay
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+      // If the debounced state has changed
+      if (reading != probeState) {
+        probeState = reading;
+        
+        // Update our state tracking
+        if (probeState == HIGH) {
+          if (!sawHigh) {
+            sawHigh = true;  // First HIGH
+          } else if (sawLow) {
+            // We've seen HIGH->LOW->HIGH, break out of the loop
+            break;
+          }
+        } else if (probeState == LOW) {
+          if (sawHigh) {
+            sawLow = true;  // HIGH->LOW
+          }
+        }
+      }
+    }
+    
+    lastProbeState = reading;
+    
+    // Let other processes run
+    yield();
+  }
+  
+  // After detecting the cycle, turn off the motor
+  digitalWrite(MOTOR_PIN, LOW);
 }
 
-void handleMotorOff() {
-  digitalWrite(LED_BUILTIN, HIGH);
-  digitalWrite(MOTOR_PIN, LOW);
-  server.send(200, "text/plain", "Motor is OFF");
+void handleMotorRun() {
+  digitalWrite(LED_BUILTIN, LOW);  // Turn LED on
+  runMotor();
+  digitalWrite(LED_BUILTIN, HIGH);  // Turn LED off
+  
+  server.send(200, "text/plain", "Motor cycle completed");
 }
+
+
 void handleWiFiPost() {
   JsonDocument response;
 
@@ -131,6 +203,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(PROBE_PIN, INPUT_PULLUP);
   digitalWrite(LED_BUILTIN, HIGH); // LED off
   digitalWrite(MOTOR_PIN, LOW); // Motor off
 
@@ -143,32 +216,17 @@ void setup() {
   loadWifiConfig();
 
   Serial.printf("Trying Wi-Fi: %s\n", current_ssid.c_str());
-  WiFi.begin(current_ssid.c_str(), current_password.c_str());
+  wl_status_t status = wifiConnect(WiFi, current_ssid, current_password);
 
-  int retry = 0;
-  while (WiFi.status() != WL_CONNECTED && retry < 20) {
-    delay(500);
-    Serial.print(".");
-    retry++;
-  }
-
-  if (WiFi.status() != WL_CONNECTED) {
+  if (status != WL_CONNECTED) {
     Serial.println("\nStored Wi-Fi failed. Falling back to default credentials.");
 
     // Use hardcoded defaults
     current_ssid = my_default_ssid;
     current_password = my_default_password;
 
-    WiFi.begin(current_ssid.c_str(), current_password.c_str());
-
-    retry = 0;
-    while (WiFi.status() != WL_CONNECTED && retry < 20) {
-      delay(500);
-      Serial.print(".");
-      retry++;
-    }
-
-    if (WiFi.status() == WL_CONNECTED) {
+    status = wifiConnect(WiFi, current_ssid, current_password);
+    if (status == WL_CONNECTED) {
       Serial.println("\nFallback Wi-Fi connected.");
     } else {
       Serial.println("\nFallback Wi-Fi also failed.");
@@ -179,10 +237,10 @@ void setup() {
 
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.println(WiFi.macAddress());
 
   server.on("/", handleRoot);
-  server.on("/motorOn", handleMotorOn);
-  server.on("/motorOff", handleMotorOff);
+  server.on("/motorRun", handleMotorRun);
   server.on("/wifi", HTTP_POST, handleWiFiPost);
   server.begin();
   Serial.println("HTTP server started");
