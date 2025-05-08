@@ -9,6 +9,7 @@
 #include <ESP8266WebServer.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
+#include <time.h>
 
 #include <credentials.h>
 #include <client_html.h>
@@ -28,6 +29,35 @@ IPAddress dns1(8, 8, 8, 8);
 
 ESP8266WebServer server(80);
 const char* config_path = "/wifi.json";
+
+// Add these global variables
+const int UTC_OFFSET = 0; // UTC timezone (0 for UTC)
+const int UTC_FEED_HOUR = 13; // 1PM UTC
+const int UTC_FEED_MINUTE = 0;
+bool motorRanToday = false;
+time_t lastFeedTime = 0;
+
+// Add this function to setup NTP
+void setupTime() {
+  configTime(UTC_OFFSET * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  Serial.println("Waiting for NTP time sync...");
+  
+  // Wait for time to be set
+  time_t now = time(nullptr);
+  int retry = 0;
+  while (now < 24 * 3600 && retry < 10) {
+    delay(500);
+    Serial.print(".");
+    now = time(nullptr);
+    retry++;
+  }
+  
+  Serial.println();
+  struct tm timeinfo;
+  gmtime_r(&now, &timeinfo);
+  Serial.print("Current time: ");
+  Serial.println(asctime(&timeinfo));
+}
 
 void loadWifiConfig() {
   if (LittleFS.exists(config_path)) {
@@ -239,6 +269,13 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.println(WiFi.macAddress());
 
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("Start time sync");
+    setupTime();
+    Serial.println("Time sync complete");
+  }
+
+
   server.on("/", handleRoot);
   server.on("/motorRun", handleMotorRun);
   server.on("/wifi", HTTP_POST, handleWiFiPost);
@@ -249,4 +286,29 @@ void setup() {
 
 void loop() {
   server.handleClient();
+
+  // Check if it's time to feed
+  time_t now = time(nullptr);
+  if (now > 0) { // Valid time received
+    struct tm timeinfo;
+    gmtime_r(&now, &timeinfo);
+    
+    // Check if it's feed time (1PM UTC) and we haven't fed today
+    if (timeinfo.tm_hour == UTC_FEED_HOUR && 
+        timeinfo.tm_min == UTC_FEED_MINUTE && 
+        !motorRanToday) {
+      
+      Serial.println("It's feeding time!");
+      runMotor();
+      motorRanToday = true;
+      lastFeedTime = now;
+      
+    } else if (timeinfo.tm_hour != UTC_FEED_HOUR || timeinfo.tm_min != UTC_FEED_MINUTE) {
+      // Reset the flag when we're not in the feeding minute
+      motorRanToday = false;
+    }
+  }
+  
+  // Allow for background processing
+  yield();
 }
