@@ -40,7 +40,7 @@ time_t lastFeedTime = 0;
 // Add this function to setup NTP
 void setupTime(int maxTimeoutSecs = 10) {
   int retryDelay = 1000;
-  configTime(UTC_OFFSET * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  configTzTime("EET-2EEST,M3.5.0/3,M10.5.0/4", "pool.ntp.org", "time.nist.gov");
   Serial.println("Waiting for NTP time sync...");
   
   // Wait for time to be set
@@ -55,7 +55,7 @@ void setupTime(int maxTimeoutSecs = 10) {
   
   Serial.println();
   struct tm timeinfo;
-  gmtime_r(&now, &timeinfo);
+  localtime_r(&now, &timeinfo);
   Serial.print("Current time: ");
   Serial.println(asctime(&timeinfo));
 }
