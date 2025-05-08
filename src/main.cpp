@@ -38,18 +38,19 @@ bool motorRanToday = false;
 time_t lastFeedTime = 0;
 
 // Add this function to setup NTP
-void setupTime() {
+void setupTime(int maxTimeoutSecs = 10) {
+  int retryDelay = 1000;
   configTime(UTC_OFFSET * 3600, 0, "pool.ntp.org", "time.nist.gov");
   Serial.println("Waiting for NTP time sync...");
   
   // Wait for time to be set
   time_t now = time(nullptr);
-  int retry = 0;
-  while (now < 24 * 3600 && retry < 10) {
-    delay(500);
+  int retry = maxTimeoutSecs;
+  while (now < 24 * 3600 && retry > 0) {
+    delay(retryDelay);
     Serial.print(".");
     now = time(nullptr);
-    retry++;
+    retry--;
   }
   
   Serial.println();
@@ -271,6 +272,7 @@ void setup() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("Start time sync");
+    delay(1000);
     setupTime();
     Serial.println("Time sync complete");
   }
