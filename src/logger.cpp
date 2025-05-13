@@ -21,6 +21,11 @@ void Logger::println(const char *message)
     Serial.println(message);
 }
 
+void Logger::println()
+{
+    Serial.println();
+}
+
 void Logger::println(const String &message)
 {
     Serial.println(message);

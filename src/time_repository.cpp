@@ -59,7 +59,7 @@ TimeRepositoryError TimeRepository::tryToSyncTimeZone(String tz, int maxTimeoutS
 {
     int retryDelay = 1000;
     configTzTime(tz.c_str(), "pool.ntp.org", "time.nist.gov");
-    Serial.println("Waiting for NTP time sync...");
+    logger.println("Waiting for NTP time sync...");
 
     // Wait for time to be set
     time_t now = time(nullptr);
@@ -67,22 +67,22 @@ TimeRepositoryError TimeRepository::tryToSyncTimeZone(String tz, int maxTimeoutS
     while (!isTimeValid(now) && retry > 0)
     {
         delay(retryDelay);
-        Serial.print(".");
+        logger.print(".");
         now = time(nullptr);
         retry--;
     }
-    Serial.println();
+    logger.println();
 
     if (!isTimeValid(now))
     {
-        Serial.println("NTP time sync failed");
+        logger.println("NTP time sync failed");
         return TimeRepositoryError::TIME_SYNC_ERROR;
     }
 
     struct tm timeinfo;
     localtime_r(&now, &timeinfo);
-    Serial.print("Current time: ");
-    Serial.println(asctime(&timeinfo));
+    logger.print("Current time: ");
+    logger.println(asctime(&timeinfo));
 }
 
 TimeRepositoryError TimeRepository::setTimeZone(String tz, int maxTimeoutSecs = 10)
