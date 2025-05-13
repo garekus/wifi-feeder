@@ -25,10 +25,10 @@ class FileRepository
 {
 private:
     bool initialized = false;
-    Logger log;
+    Logger logger;
 
 public:
-    FileRepository(Logger log) : log(log) {};
+    FileRepository(Logger logger) : logger(logger) {};
     FileRepositoryError init();
     FileResult<JsonDocument &> readJsonFile(const String &path);
     FileRepositoryError writeJsonFile(const String &path, const JsonDocument &doc);

@@ -33,10 +33,10 @@ FileResult<JsonDocument &> FileRepository::readJsonFile(const String &path)
     file.close();
     if (error)
     {
-        log.print("file deserialize error: ");
-        log.println(error.c_str());
-        log.print("file:");
-        log.println(path.c_str());
+        logger.print("file deserialize error: ");
+        logger.println(error.c_str());
+        logger.print("file:");
+        logger.println(path.c_str());
         return FileRepositoryError::DESERIALIZE_ERROR;
     }
     return doc;
