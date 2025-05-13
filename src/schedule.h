@@ -4,12 +4,13 @@
 #include <functional>
 #include <WString.h>
 
+#include "file_repository.h"
+
 enum ScheduleError
 {
     NO_ERROR,
-    FILE_NOT_FOUND_ERROR,
-    FILE_OPEN_ERROR,
-    FILE_READ_ERROR,
+    FILE_SCHEDULE_ERROR,
+    NO_SCHEDULE_ERROR,
     JSON_PARSE_ERROR
 };
 
@@ -19,19 +20,23 @@ struct ScheduleTime
     int minute;
 };
 
-class ScheduleFeature
+class Schedule
 {
 public:
-    ScheduleFeature(String filePath, std::function<void()> callback);
     ScheduleError init();
     String getScheduleJson();
-    ScheduleError setScheduleFromJson(const String &jsonString);
-    bool isSheduled(int hour, int minute);
+    ScheduleError setSchedule(const String &jsonString);
+    bool isSheduledTime(int hour, int minute);
+
+    Schedule(FileRepository &fileRepo, Logger &logger);
 
 private:
+    FileRepository &fileRepo;
+    Logger &logger;
     ScheduleTime timesList[6];
-    String filePath;
-    std::function<void()> scheduledCallback;
+    bool isSet;
+    ScheduleError setSchedule(const JsonDocument &doc);
+    static const String filePath;
 };
 
 #endif

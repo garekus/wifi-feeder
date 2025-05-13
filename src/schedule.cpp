@@ -3,8 +3,16 @@
 
 #include "schedule.h"
 
-bool ScheduleFeature::isSheduled(int hour, int minute)
+Schedule::Schedule(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger)
 {
+    isSet = false;
+}
+
+bool Schedule::isSheduledTime(int hour, int minute)
+{
+    if (!isSet)
+        return false;
+
     for (int i = 0; i < 6; i++)
     {
         if (timesList[i].hour == hour && timesList[i].minute == minute)
@@ -15,38 +23,25 @@ bool ScheduleFeature::isSheduled(int hour, int minute)
     return false;
 }
 
-ScheduleFeature::ScheduleFeature(String filePath, std::function<void()> callback = nullptr)
+const String Schedule::filePath = "/schedule.json";
+
+ScheduleError Schedule::init()
 {
-    this->filePath = filePath;
-    this->scheduledCallback = callback;
+    FileResult<JsonDocument &> res = fileRepo.readJsonFile(filePath);
+    if (!res.isSuccess())
+    {
+        logger.print("Failed to read schedule: ");
+        logger.println(res.error());
+        return ScheduleError::FILE_SCHEDULE_ERROR;
+    }
+    JsonDocument doc = res.value();
+    if (doc.isNull())
+    {
+        return ScheduleError::NO_SCHEDULE_ERROR;
+    }
+    return setSchedule(doc);
 }
-
-ScheduleError ScheduleFeature::init()
-{
-    if (!LittleFS.exists(this->filePath))
-    {
-        return ScheduleError::FILE_NOT_FOUND_ERROR;
-    }
-
-    File file = LittleFS.open(this->filePath, "r");
-    if (!file)
-    {
-        return ScheduleError::FILE_OPEN_ERROR;
-    }
-
-    // Read file into a String
-    String jsonString = file.readString();
-    file.close();
-
-    if (jsonString.length() == 0)
-    {
-        return ScheduleError::FILE_READ_ERROR;
-    }
-
-    // Use the String version of setScheduleFromJson
-    return this->setScheduleFromJson(jsonString);
-}
-String ScheduleFeature::getScheduleJson()
+String Schedule::getScheduleJson()
 {
     JsonDocument doc;
 
@@ -62,7 +57,7 @@ String ScheduleFeature::getScheduleJson()
     return jsonString;
 }
 
-ScheduleError ScheduleFeature::setScheduleFromJson(const String &jsonString)
+ScheduleError Schedule::setSchedule(const String &jsonString)
 {
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, jsonString);
@@ -71,11 +66,17 @@ ScheduleError ScheduleFeature::setScheduleFromJson(const String &jsonString)
         return ScheduleError::JSON_PARSE_ERROR;
     }
 
+    this->setSchedule(doc);
+    return NO_ERROR;
+}
+
+ScheduleError Schedule::setSchedule(const JsonDocument &doc)
+{
+    isSet = true;
     for (int i = 0; i < 6; i++)
     {
         timesList[i].hour = doc[i]["hour"].as<int>();
         timesList[i].minute = doc[i]["minute"].as<int>();
     }
-
     return NO_ERROR;
 }
