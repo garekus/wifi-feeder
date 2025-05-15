@@ -6,14 +6,14 @@
 
 #include "file_repository.h"
 
-enum TimeRepositoryError
+enum NtpTimeError
 {
     NO_ERROR,
     CONFIG_READ_ERROR,
     TIME_SYNC_ERROR
 };
 
-class TimeRepository
+class NtpTime
 {
 private:
     String currentTZ;
@@ -23,15 +23,15 @@ private:
     const String configPath = "/time.json";
     Logger &logger;
 
-    TimeRepositoryError loadPreservedConfig();
+    NtpTimeError loadPreservedConfig();
     void preserveConfig();
     void loadDefaultConfig();
-    TimeRepositoryError tryToSyncTimeZone(String tz, int maxTimeoutSecs = 10);
+    NtpTimeError tryToSyncTimeZone(String tz, int maxTimeoutSecs = 10);
 
 public:
-    TimeRepository(FileRepository &fileRepo, Logger &logger);
+    NtpTime(FileRepository &fileRepo, Logger &logger);
     void init();
-    TimeRepositoryError setTimeZone(String tz, int maxTimeoutSecs = 10);
+    NtpTimeError setTimeZone(String tz, int maxTimeoutSecs = 10);
     tm getTime();
     String getTimeStatusJson();
 };

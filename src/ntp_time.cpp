@@ -1,61 +1,61 @@
-#include "time_repository.h"
+#include "ntp_time.h"
 
 #define TIMEZONE_KEY "timezone"
 
-TimeRepository::TimeRepository(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
+NtpTime::NtpTime(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
 
-void TimeRepository::init()
+void NtpTime::init()
 {
-    TimeRepositoryError err = loadPreservedConfig();
-    if (err != TimeRepositoryError::NO_ERROR)
+    NtpTimeError err = loadPreservedConfig();
+    if (err != NtpTimeError::NO_ERROR)
     {
         logger.println("Failed to load preserved time config, fallback to default");
     }
     err = tryToSyncTimeZone(currentTZ);
-    if (err != TimeRepositoryError::NO_ERROR)
+    if (err != NtpTimeError::NO_ERROR)
     {
         logger.print("Failed to sync preserved time, tz: " + currentTZ + ", fallback to default");
     }
 
     loadDefaultConfig();
     err = tryToSyncTimeZone(currentTZ);
-    if (err != TimeRepositoryError::NO_ERROR)
+    if (err != NtpTimeError::NO_ERROR)
     {
         logger.print("Failed to sync default time, tz: " + currentTZ);
     }
 }
 
-void TimeRepository::loadDefaultConfig()
+void NtpTime::loadDefaultConfig()
 {
     currentTZ = defaultTZ;
 }
 
-void TimeRepository::preserveConfig()
+void NtpTime::preserveConfig()
 {
     JsonDocument doc;
     doc[TIMEZONE_KEY] = currentTZ;
     fileRepo.writeJsonFile(configPath, doc);
 }
-TimeRepositoryError TimeRepository::loadPreservedConfig()
+NtpTimeError NtpTime::loadPreservedConfig()
 {
     FileResult<JsonDocument &> res = fileRepo.readJsonFile(configPath);
     if (!res.isSuccess())
     {
         logger.print("Failed to read time config");
         logger.println(res.error());
-        return TimeRepositoryError::CONFIG_READ_ERROR;
+        return NtpTimeError::CONFIG_READ_ERROR;
     }
 
     JsonDocument doc = res.value();
     if (doc.isNull())
     {
-        return TimeRepositoryError::CONFIG_READ_ERROR;
+        return NtpTimeError::CONFIG_READ_ERROR;
     }
     currentTZ = doc[TIMEZONE_KEY].as<String>();
-    return TimeRepositoryError::NO_ERROR;
+    return NtpTimeError::NO_ERROR;
 }
 
-TimeRepositoryError TimeRepository::tryToSyncTimeZone(String tz, int maxTimeoutSecs)
+NtpTimeError NtpTime::tryToSyncTimeZone(String tz, int maxTimeoutSecs)
 {
     int retryDelay = 1000;
     configTzTime(tz.c_str(), "pool.ntp.org", "time.nist.gov");
@@ -76,7 +76,7 @@ TimeRepositoryError TimeRepository::tryToSyncTimeZone(String tz, int maxTimeoutS
     if (!isTimeValid(now))
     {
         logger.println("NTP time sync failed");
-        return TimeRepositoryError::TIME_SYNC_ERROR;
+        return NtpTimeError::TIME_SYNC_ERROR;
     }
 
     struct tm timeinfo;
@@ -85,20 +85,20 @@ TimeRepositoryError TimeRepository::tryToSyncTimeZone(String tz, int maxTimeoutS
     logger.println(asctime(&timeinfo));
 }
 
-TimeRepositoryError TimeRepository::setTimeZone(String tz, int maxTimeoutSecs = 10)
+NtpTimeError NtpTime::setTimeZone(String tz, int maxTimeoutSecs = 10)
 {
-    TimeRepositoryError err = tryToSyncTimeZone(tz, maxTimeoutSecs);
-    if (err != TimeRepositoryError::NO_ERROR)
+    NtpTimeError err = tryToSyncTimeZone(tz, maxTimeoutSecs);
+    if (err != NtpTimeError::NO_ERROR)
     {
         return err;
     }
 
     currentTZ = tz;
     preserveConfig();
-    return TimeRepositoryError::NO_ERROR;
+    return NtpTimeError::NO_ERROR;
 }
 
-tm TimeRepository::getTime()
+tm NtpTime::getTime()
 {
     time_t now = time(nullptr);
     struct tm timeinfo;
@@ -106,7 +106,7 @@ tm TimeRepository::getTime()
     return timeinfo;
 }
 
-String TimeRepository::getTimeStatusJson()
+String NtpTime::getTimeStatusJson()
 {
     struct tm timeinfo = getTime();
     JsonDocument doc;

@@ -25,9 +25,8 @@ class Schedule
 public:
     ScheduleError init();
     String getScheduleJson();
-    ScheduleError setSchedule(const String &jsonString);
     bool isSheduledTime(int hour, int minute);
-
+    ScheduleError setSchedule(const JsonDocument &doc);
     Schedule(FileRepository &fileRepo, Logger &logger);
 
 private:
@@ -35,7 +34,6 @@ private:
     Logger &logger;
     ScheduleTime timesList[6];
     bool isSet;
-    ScheduleError setSchedule(const JsonDocument &doc);
     static const String filePath;
 };
 

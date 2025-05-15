@@ -57,19 +57,15 @@ String Schedule::getScheduleJson()
     return jsonString;
 }
 
-ScheduleError Schedule::setSchedule(const String &jsonString)
-{
-    JsonDocument doc;
-    DeserializationError error = deserializeJson(doc, jsonString);
-    if (error)
-    {
-        return ScheduleError::JSON_PARSE_ERROR;
-    }
-
-    this->setSchedule(doc);
-    return NO_ERROR;
-}
-
+/**
+ * @brief Set the schedule times from a JSON document
+ *
+ * The document should contain an array of six objects, each with "hour" and "minute" properties.
+ * The times are stored in the timesList array.
+ *
+ * @param doc The JSON document containing the schedule times
+ * @return NO_ERROR on success
+ */
 ScheduleError Schedule::setSchedule(const JsonDocument &doc)
 {
     isSet = true;

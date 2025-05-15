@@ -60,7 +60,7 @@ private:
 
 public:
     WiFiConnection(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
-    WiFiError resetFromJson(const String &jsonString);
+    WiFiError resetTo(const JsonDocument &doc);
     String &getStatusJson();
     WiFiError init();
 };

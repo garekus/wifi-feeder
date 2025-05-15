@@ -113,19 +113,9 @@ WiFiError WiFiConnection::connect()
     return WiFiError::CONNECT_ERROR;
 }
 
-WiFiError WiFiConnection::resetFromJson(const String &jsonConfig)
+WiFiError WiFiConnection::resetTo(const JsonDocument &doc)
 {
-    if (jsonConfig.isEmpty())
-    {
-        return WiFiError::EMPTY_JSON_ERROR;
-    }
-    JsonDocument jsonConfigDoc;
-    DeserializationError error = deserializeJson(jsonConfigDoc, jsonConfig);
-    if (error)
-    {
-        return WiFiError::DESERIALIZE_ERROR;
-    }
-    loadConfigFromJsonDoc(jsonConfigDoc);
+    loadConfigFromJsonDoc(doc);
 
     WiFiError err = connect();
     if (err != WiFiError::NO_ERROR)

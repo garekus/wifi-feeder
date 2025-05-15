@@ -1,0 +1,194 @@
+
+#include "http_server.h"
+#include "client_html.h"
+
+HttpServer::HttpServer(Logger logger, WiFiConnection &wifiConn, NtpTime &ntpTime, Feeder &feeder, Schedule &schedule)
+    : logger(logger), wifiConn(wifiConn), ntpTime(ntpTime), feeder(feeder), schedule(schedule)
+{
+    server = new ESP8266WebServer(80);
+}
+
+void HttpServer::init()
+{
+    server->on("/", std::bind(&HttpServer::handleRoot, this));
+    server->on("/feed", std::bind(&HttpServer::handleFeed, this));
+    server->on("/wifi", HTTP_POST, createJsonHandler(400, [this](const JsonDocument &body)
+                                                     { this->handlePostWiFi(body); }));
+    server->on("/time", HTTP_POST, createJsonHandler(400, [this](const JsonDocument &body)
+                                                     { this->handlePostTime(body); }));
+    server->on("/schedule", HTTP_POST, createJsonHandler(400, [this](const JsonDocument &body)
+                                                         { this->handlePostSchedule(body); }));
+    server->on("/wifi", HTTP_GET, std::bind(&HttpServer::handleGetWiFiStatus, this));
+    server->on("/time", HTTP_GET, std::bind(&HttpServer::handleGetTimeStatus, this));
+    server->on("/schedule", HTTP_GET, std::bind(&HttpServer::handleGetSchedule, this));
+
+    server->begin();
+    logger.println("HTTP server started");
+}
+
+void HttpServer::processRequests()
+{
+    server->handleClient();
+}
+
+void HttpServer::handleRoot()
+{
+    server->send(200, "text/html", clientHtml);
+}
+
+void HttpServer::handleFeed()
+{
+    digitalWrite(LED_BUILTIN, LOW); // Turn LED on
+    feeder.feed();
+    digitalWrite(LED_BUILTIN, HIGH); // Turn LED off
+    server->send(200, "text/plain", "Feeding completed");
+}
+
+void HttpServer::handlePostWiFi(const JsonDocument &body)
+{
+    JsonDocument response;
+
+    String ssid = body["ssid"] | "";
+    String pwd = body["pwd"] | "";
+
+    if (ssid.isEmpty() || ssid.length() > 150)
+    {
+        response["status"] = "error";
+        response["message"] = "SSID is missing or too long (max 150)";
+        sendJson(400, response);
+        return;
+    }
+
+    if (pwd.isEmpty() || pwd.length() > 200)
+    {
+        response["status"] = "error";
+        response["message"] = "Password is missing or too long (max 200)";
+        sendJson(400, response);
+        return;
+    }
+
+    WiFiError err = wifiConn.resetTo(body);
+    if (err != WiFiError::NO_ERROR)
+    {
+        response["status"] = "error";
+        response["message"] = "Failed to connect to wifi";
+        response["error"] = err;
+        sendJson(500, response);
+        return;
+    }
+    response["status"] = "success";
+    response["message"] = "New wifi config applied";
+    sendJson(200, response);
+}
+
+void HttpServer::handleGetWiFiStatus()
+{
+    String json = wifiConn.getStatusJson();
+    server->send(200, "application/json", json);
+}
+void HttpServer::handleGetTimeStatus()
+{
+    String json = ntpTime.getTimeStatusJson();
+    server->send(200, "application/json", json);
+}
+
+void HttpServer::handleGetSchedule()
+{
+    String json = schedule.getScheduleJson();
+    server->send(200, "application/json", json);
+}
+
+void HttpServer::handlePostSchedule(const JsonDocument &body)
+{
+    JsonDocument response;
+
+    ScheduleError err = schedule.setSchedule(body);
+    if (err != ScheduleError::NO_ERROR)
+    {
+        response["status"] = "error";
+        response["message"] = "Failed to set schedule";
+        response["error"] = err;
+        sendJson(500, response);
+        return;
+    }
+
+    response["status"] = "success";
+    response["message"] = "New schedule applied";
+    sendJson(200, response);
+}
+
+void HttpServer::handlePostTime(const JsonDocument &body)
+{
+    JsonDocument response;
+
+    String tz = body["timezone"] | "";
+    if (tz.isEmpty() || tz.length() > 50)
+    {
+        response["status"] = "error";
+        response["message"] = "Timezone is invalid";
+        sendJson(400, response);
+        return;
+    }
+
+    NtpTimeError err = ntpTime.setTimeZone(tz);
+    if (err != NtpTimeError::NO_ERROR)
+    {
+        response["status"] = "error";
+        response["message"] = "Failed to set time";
+        response["error"] = err;
+        sendJson(500, response);
+        return;
+    }
+    response["status"] = "success";
+    response["message"] = "New time config applied";
+    sendJson(200, response);
+}
+
+void responseWithJson(ESP8266WebServer *server, int code, const JsonDocument &json)
+{
+    String resBody;
+    serializeJson(json, resBody);
+    server->send(code, "application/json", resBody);
+}
+
+void HttpServer::sendJson(int code, const JsonDocument &json)
+{
+    responseWithJson(this->server, code, json);
+}
+
+std::function<void(void)> HttpServer::createJsonHandler(int maxBodyLength, std::function<void(const JsonDocument &doc)> handler)
+{
+    ESP8266WebServer *serv = this->server;
+    return [&serv, maxBodyLength, &handler](void)
+    {
+        JsonDocument response;
+
+        // Check body size
+        if (!serv->hasArg("plain") ||
+            serv->arg("plain").length() > maxBodyLength)
+        {
+            response["status"] = "error";
+            response["message"] = "Request too large or missing body (max " +
+                                  String(maxBodyLength) + " chars)";
+            responseWithJson(serv, 400, response);
+            return;
+        }
+
+        // Parse JSON
+        const String &body = serv->arg("plain");
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, body);
+
+        if (error)
+        {
+            response["status"] = "error";
+            response["message"] = "Invalid JSON format";
+            response["error"] = error.c_str();
+            responseWithJson(serv, 400, response);
+            return;
+        }
+
+        // Call the handler with the parsed document
+        handler(doc);
+    };
+};
