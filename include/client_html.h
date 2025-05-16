@@ -85,23 +85,6 @@ const char *clientHtml = R""""(
       <label for="pwd">Password:</label>
       <input type="password" id="pwd" name="pwd" required>
     </div>
-    <h3>Static IP (Optional)</h3>
-    <div class="form-group">
-      <label for="staticIp">IP Address:</label>
-      <input type="text" id="staticIp" name="staticIp" placeholder="192.168.1.201">
-    </div>
-    <div class="form-group">
-      <label for="gateway">Gateway:</label>
-      <input type="text" id="gateway" name="gateway" placeholder="192.168.1.1">
-    </div>
-    <div class="form-group">
-      <label for="subnet">Subnet Mask:</label>
-      <input type="text" id="subnet" name="subnet" placeholder="255.255.255.0">
-    </div>
-    <div class="form-group">
-      <label for="dns1">DNS:</label>
-      <input type="text" id="dns1" name="dns1" placeholder="192.168.1.1">
-    </div>
     <button type="submit" class="btn">Save WiFi Configuration</button>
   </form>
   <div id="wifiResponse" class="response-message"></div>

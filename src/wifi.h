@@ -43,7 +43,6 @@ struct WiFiConfig
 {
     String ssid;
     String pwd;
-    IpConfig staticIpConfig;
 };
 
 class WiFiConnection

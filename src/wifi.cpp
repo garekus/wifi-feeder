@@ -7,22 +7,12 @@ const char *WiFiConnection::config_path = "/wifi.json";
 const WiFiConfig WiFiConnection::defaultConf = {
     ssid : default_ssid,
     pwd : default_password,
-    staticIpConfig : {
-        ip : IPAddress(192, 168, 50, 201),
-        gateway : IPAddress(192, 168, 50, 1),
-        subnet : IPAddress(255, 255, 255, 0),
-        dns1 : IPAddress(192, 168, 50, 1)
-    }
 };
 
 void WiFiConnection::loadDefaultConfig()
 {
     currentConf.ssid = defaultConf.ssid;
     currentConf.pwd = defaultConf.pwd;
-    currentConf.staticIpConfig.ip = defaultConf.staticIpConfig.ip;
-    currentConf.staticIpConfig.gateway = defaultConf.staticIpConfig.gateway;
-    currentConf.staticIpConfig.subnet = defaultConf.staticIpConfig.subnet;
-    currentConf.staticIpConfig.dns1 = defaultConf.staticIpConfig.dns1;
 }
 
 WiFiErr::Value WiFiConnection::init()
@@ -59,10 +49,6 @@ WiFiErr::Value WiFiConnection::preserveCurrentConfig()
 
     doc["ssid"] = currentConf.ssid;
     doc["pwd"] = currentConf.pwd;
-    doc["staticIp"] = currentConf.staticIpConfig.ip.toString();
-    doc["gateway"] = currentConf.staticIpConfig.gateway.toString();
-    doc["subnet"] = currentConf.staticIpConfig.subnet.toString();
-    doc["dns1"] = currentConf.staticIpConfig.dns1.toString();
 
     serializeJson(doc, json);
     FileRepoErr::Value writeRes = fileRepo.writeJsonFile(config_path, doc);
@@ -79,10 +65,6 @@ void WiFiConnection::loadConfigFromJsonDoc(const JsonDocument &doc)
 {
     currentConf.ssid = doc["ssid"].as<String>();
     currentConf.pwd = doc["pwd"].as<String>();
-    currentConf.staticIpConfig.ip.fromString(doc["staticIp"].as<String>());
-    currentConf.staticIpConfig.gateway.fromString(doc["gateway"].as<String>());
-    currentConf.staticIpConfig.subnet.fromString(doc["subnet"].as<String>());
-    currentConf.staticIpConfig.dns1.fromString(doc["dns1"].as<String>());
 }
 
 WiFiErr::Value WiFiConnection::connect()
@@ -90,15 +72,15 @@ WiFiErr::Value WiFiConnection::connect()
     logger.println("Trying Wi-Fi: ");
     logger.println(currentConf.ssid.c_str());
 
-    if (currentConf.staticIpConfig.ip.isSet())
-    {
-        WiFi.config(currentConf.staticIpConfig.ip, currentConf.staticIpConfig.gateway, currentConf.staticIpConfig.subnet, currentConf.staticIpConfig.dns1);
-    }
+    // if (currentConf.staticIpConfig.ip.isSet())
+    // {
+    //     WiFi.config(currentConf.staticIpConfig.ip, currentConf.staticIpConfig.gateway, currentConf.staticIpConfig.subnet, currentConf.staticIpConfig.dns1);
+    // }
     WiFi.begin(currentConf.ssid.c_str(), currentConf.pwd.c_str());
     int retry = 0;
     while (WiFi.status() != WL_CONNECTED && retry < CONNECT_MAX_RETRIES)
     {
-        delay(500);
+        delay(1000);
         logger.print(".");
         retry++;
     }
