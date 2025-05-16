@@ -17,15 +17,18 @@ config json:
 }
 */
 
-enum WiFiError
+struct WiFiErr
 {
-    NO_ERROR,
-    INIT_ERROR,
-    EMPTY_JSON_ERROR,
-    DESERIALIZE_ERROR,
-    CONNECT_ERROR,
-    CONFIG_SAVE_ERROR,
-    FILE_CONFIG_ERROR
+    enum Value : int
+    {
+        NO_ERROR,
+        INIT_ERROR,
+        EMPTY_JSON_ERROR,
+        DESERIALIZE_ERROR,
+        CONNECT_ERROR,
+        CONFIG_SAVE_ERROR,
+        FILE_CONFIG_ERROR
+    };
 };
 
 struct IpConfig
@@ -52,17 +55,17 @@ private:
     FileRepository &fileRepo;
     Logger &logger;
 
-    WiFiError preserveCurrentConfig();
-    WiFiError connect();
+    WiFiErr::Value preserveCurrentConfig();
+    WiFiErr::Value connect();
     void loadConfigFromJsonDoc(const JsonDocument &doc);
     void loadDefaultConfig();
-    WiFiError tryPreservedConfig();
+    WiFiErr::Value tryPreservedConfig();
 
 public:
     WiFiConnection(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
-    WiFiError resetTo(const JsonDocument &doc);
+    WiFiErr::Value resetTo(const JsonDocument &doc);
     String &getStatusJson();
-    WiFiError init();
+    WiFiErr::Value init();
 };
 
 #endif

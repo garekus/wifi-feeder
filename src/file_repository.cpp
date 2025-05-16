@@ -1,34 +1,33 @@
 #include "file_repository.h"
 
-FileRepositoryError FileRepository::init()
+FileRepoErr::Value FileRepository::init()
 {
     if (LittleFS.begin())
     {
         this->initialized = true;
-        return FileRepositoryError::NO_ERROR;
+        return FileRepoErr::NO_ERROR;
     }
     else
-        return FileRepositoryError::INIT_ERROR;
+        return FileRepoErr::INIT_ERROR;
 }
 
-FileResult<JsonDocument &> FileRepository::readJsonFile(const String &path)
+FileRepoErr::Value FileRepository::readJsonFile(const String &path, JsonDocument &doc)
 {
     if (!this->initialized)
     {
-        return FileRepositoryError::NOT_INITIALIZED_ERROR;
+        return FileRepoErr::NOT_INITIALIZED_ERROR;
     }
     if (!LittleFS.exists(path))
     {
-        return FileRepositoryError::FILE_NOT_FOUND_ERROR;
+        return FileRepoErr::FILE_NOT_FOUND_ERROR;
     }
 
     File file = LittleFS.open(path, "r");
     if (!file)
     {
-        return FileRepositoryError::FILE_OPEN_ERROR;
+        return FileRepoErr::FILE_OPEN_ERROR;
     }
 
-    JsonDocument doc;
     DeserializationError error = deserializeJson(doc, file);
     file.close();
     if (error)
@@ -37,24 +36,24 @@ FileResult<JsonDocument &> FileRepository::readJsonFile(const String &path)
         logger.println(error.c_str());
         logger.print("file:");
         logger.println(path.c_str());
-        return FileRepositoryError::DESERIALIZE_ERROR;
+        return FileRepoErr::DESERIALIZE_ERROR;
     }
-    return doc;
+    return FileRepoErr::NO_ERROR;
 }
 
-FileRepositoryError FileRepository::writeJsonFile(const String &path, const JsonDocument &doc)
+FileRepoErr::Value FileRepository::writeJsonFile(const String &path, const JsonDocument &doc)
 {
     if (!this->initialized)
     {
-        return FileRepositoryError::NOT_INITIALIZED_ERROR;
+        return FileRepoErr::NOT_INITIALIZED_ERROR;
     }
     File file = LittleFS.open(path, "w");
     if (!file)
     {
-        return FileRepositoryError::FILE_OPEN_ERROR;
+        return FileRepoErr::FILE_OPEN_ERROR;
     }
 
     serializeJson(doc, file);
     file.close();
-    return FileRepositoryError::NO_ERROR;
+    return FileRepoErr::NO_ERROR;
 }

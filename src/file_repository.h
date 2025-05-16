@@ -7,19 +7,22 @@
 #include "Result.h"
 #include "logger.h"
 
-enum FileRepositoryError
+struct FileRepoErr
 {
-    NO_ERROR,
-    INIT_ERROR,
-    NOT_INITIALIZED_ERROR,
-    FILE_NOT_FOUND_ERROR,
-    FILE_OPEN_ERROR,
-    FILE_READ_ERROR,
-    DESERIALIZE_ERROR,
+    enum Value : int
+    {
+        NO_ERROR,
+        INIT_ERROR,
+        NOT_INITIALIZED_ERROR,
+        FILE_NOT_FOUND_ERROR,
+        FILE_OPEN_ERROR,
+        FILE_READ_ERROR,
+        DESERIALIZE_ERROR,
+    };
 };
 
 template <typename T>
-using FileResult = Result<T, FileRepositoryError>;
+using FileResult = Result<T, FileRepoErr>;
 
 class FileRepository
 {
@@ -29,9 +32,9 @@ private:
 
 public:
     FileRepository(Logger logger) : logger(logger) {};
-    FileRepositoryError init();
-    FileResult<JsonDocument &> readJsonFile(const String &path);
-    FileRepositoryError writeJsonFile(const String &path, const JsonDocument &doc);
+    FileRepoErr::Value init();
+    FileRepoErr::Value readJsonFile(const String &path, JsonDocument &doc);
+    FileRepoErr::Value writeJsonFile(const String &path, const JsonDocument &doc);
 };
 
 #endif

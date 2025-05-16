@@ -44,6 +44,23 @@ void HttpServer::handleFeed()
     server->send(200, "text/plain", "Feeding completed");
 }
 
+/**
+ * @brief Handle POST request on /wifi endpoint
+ *
+ * Resets the device's WiFi configuration to the provided values.
+ *
+ * The request body should contain a JSON document with the following structure:
+ * {
+ *     ssid: string,
+ *     pwd: string,
+ *     staticIp: string,
+ *     gateway: string,
+ *     subnet: string,
+ *     dns1: string
+ * }
+ *
+ * @param body The parsed JSON document from the request body
+ */
 void HttpServer::handlePostWiFi(const JsonDocument &body)
 {
     JsonDocument response;
@@ -67,8 +84,8 @@ void HttpServer::handlePostWiFi(const JsonDocument &body)
         return;
     }
 
-    WiFiError err = wifiConn.resetTo(body);
-    if (err != WiFiError::NO_ERROR)
+    WiFiErr::Value err = wifiConn.resetTo(body);
+    if (err != WiFiErr::NO_ERROR)
     {
         response["status"] = "error";
         response["message"] = "Failed to connect to wifi";
@@ -102,8 +119,8 @@ void HttpServer::handlePostSchedule(const JsonDocument &body)
 {
     JsonDocument response;
 
-    ScheduleError err = schedule.setSchedule(body);
-    if (err != ScheduleError::NO_ERROR)
+    ScheduleErr::Value err = schedule.setSchedule(body);
+    if (err != ScheduleErr::NO_ERROR)
     {
         response["status"] = "error";
         response["message"] = "Failed to set schedule";
@@ -130,8 +147,8 @@ void HttpServer::handlePostTime(const JsonDocument &body)
         return;
     }
 
-    NtpTimeError err = ntpTime.setTimeZone(tz);
-    if (err != NtpTimeError::NO_ERROR)
+    NtpTimeErr::Value err = ntpTime.setTimeZone(tz);
+    if (err != NtpTimeErr::NO_ERROR)
     {
         response["status"] = "error";
         response["message"] = "Failed to set time";
@@ -156,7 +173,7 @@ void HttpServer::sendJson(int code, const JsonDocument &json)
     responseWithJson(this->server, code, json);
 }
 
-std::function<void(void)> HttpServer::createJsonHandler(int maxBodyLength, std::function<void(const JsonDocument &doc)> handler)
+std::function<void(void)> HttpServer::createJsonHandler(unsigned int maxBodyLength, std::function<void(const JsonDocument &doc)> handler)
 {
     ESP8266WebServer *serv = this->server;
     return [&serv, maxBodyLength, &handler](void)

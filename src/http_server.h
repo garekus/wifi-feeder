@@ -9,12 +9,6 @@
 #include "feeder.h"
 #include "ntp_time.h"
 
-enum HttpServerError
-{
-    NO_ERROR,
-    BODY_PARSE_ERROR
-};
-
 class HttpServer
 {
 private:
@@ -34,7 +28,7 @@ private:
     void handlePostSchedule(const JsonDocument &body);
     void handleGetSchedule();
 
-    std::function<void(void)> createJsonHandler(int maxBodyLength, std::function<void(const JsonDocument &doc)> handler);
+    std::function<void(void)> createJsonHandler(unsigned int maxBodyLength, std::function<void(const JsonDocument &doc)> handler);
 
     void sendJson(int code, const JsonDocument &json);
 

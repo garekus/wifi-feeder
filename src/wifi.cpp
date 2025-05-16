@@ -25,11 +25,11 @@ void WiFiConnection::loadDefaultConfig()
     currentConf.staticIpConfig.dns1 = defaultConf.staticIpConfig.dns1;
 }
 
-WiFiError WiFiConnection::init()
+WiFiErr::Value WiFiConnection::init()
 {
     logger.println("Trying preserved config...");
-    WiFiError res = tryPreservedConfig();
-    if (res == WiFiError::NO_ERROR)
+    WiFiErr::Value res = tryPreservedConfig();
+    if (res == WiFiErr::NO_ERROR)
         return res;
 
     logger.println("Falling back to hardcoded credentials...");
@@ -37,21 +37,22 @@ WiFiError WiFiConnection::init()
     return connect();
 }
 
-WiFiError WiFiConnection::tryPreservedConfig()
+WiFiErr::Value WiFiConnection::tryPreservedConfig()
 {
-    FileResult<JsonDocument &> res = fileRepo.readJsonFile(config_path);
-    if (!res.isSuccess())
+    JsonDocument doc;
+    FileRepoErr::Value res = fileRepo.readJsonFile(config_path, doc);
+    if (res != FileRepoErr::NO_ERROR)
     {
         logger.print("Failed to read config: ");
-        logger.println(res.error());
-        return WiFiError::FILE_CONFIG_ERROR;
+        logger.println(res);
+        return WiFiErr::FILE_CONFIG_ERROR;
     }
 
-    loadConfigFromJsonDoc(res.value());
+    loadConfigFromJsonDoc(doc);
     return connect();
 }
 
-WiFiError WiFiConnection::preserveCurrentConfig()
+WiFiErr::Value WiFiConnection::preserveCurrentConfig()
 {
     String json;
     JsonDocument doc;
@@ -64,14 +65,14 @@ WiFiError WiFiConnection::preserveCurrentConfig()
     doc["dns1"] = currentConf.staticIpConfig.dns1.toString();
 
     serializeJson(doc, json);
-    FileRepositoryError writeRes = fileRepo.writeJsonFile(config_path, doc);
-    if (writeRes != FileRepositoryError::NO_ERROR)
+    FileRepoErr::Value writeRes = fileRepo.writeJsonFile(config_path, doc);
+    if (writeRes != FileRepoErr::NO_ERROR)
     {
         logger.println("Failed to save config");
-        return WiFiError::CONFIG_SAVE_ERROR;
+        return WiFiErr::CONFIG_SAVE_ERROR;
     }
 
-    return WiFiError::NO_ERROR;
+    return WiFiErr::NO_ERROR;
 }
 
 void WiFiConnection::loadConfigFromJsonDoc(const JsonDocument &doc)
@@ -84,7 +85,7 @@ void WiFiConnection::loadConfigFromJsonDoc(const JsonDocument &doc)
     currentConf.staticIpConfig.dns1.fromString(doc["dns1"].as<String>());
 }
 
-WiFiError WiFiConnection::connect()
+WiFiErr::Value WiFiConnection::connect()
 {
     logger.println("Trying Wi-Fi: ");
     logger.println(currentConf.ssid.c_str());
@@ -104,21 +105,21 @@ WiFiError WiFiConnection::connect()
 
     if (WiFi.status() == WL_CONNECTED)
     {
-        return WiFiError::NO_ERROR;
+        return WiFiErr::NO_ERROR;
     }
 
     logger.print("Connection failed with status");
     logger.println(WiFi.status());
 
-    return WiFiError::CONNECT_ERROR;
+    return WiFiErr::CONNECT_ERROR;
 }
 
-WiFiError WiFiConnection::resetTo(const JsonDocument &doc)
+WiFiErr::Value WiFiConnection::resetTo(const JsonDocument &doc)
 {
     loadConfigFromJsonDoc(doc);
 
-    WiFiError err = connect();
-    if (err != WiFiError::NO_ERROR)
+    WiFiErr::Value err = connect();
+    if (err != WiFiErr::NO_ERROR)
     {
         return err;
     }

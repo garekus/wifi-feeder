@@ -6,12 +6,15 @@
 
 #include "file_repository.h"
 
-enum ScheduleError
+struct ScheduleErr
 {
-    NO_ERROR,
-    FILE_SCHEDULE_ERROR,
-    NO_SCHEDULE_ERROR,
-    JSON_PARSE_ERROR
+    enum Value : int
+    {
+        NO_ERROR,
+        FILE_SCHEDULE_ERROR,
+        NO_SCHEDULE_ERROR,
+        JSON_PARSE_ERROR
+    };
 };
 
 struct ScheduleTime
@@ -23,10 +26,10 @@ struct ScheduleTime
 class Schedule
 {
 public:
-    ScheduleError init();
+    ScheduleErr::Value init();
     String getScheduleJson();
     bool isSheduledTime(int hour, int minute);
-    ScheduleError setSchedule(const JsonDocument &doc);
+    ScheduleErr::Value setSchedule(const JsonDocument &doc);
     Schedule(FileRepository &fileRepo, Logger &logger);
 
 private:

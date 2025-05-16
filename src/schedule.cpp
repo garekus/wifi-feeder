@@ -25,19 +25,19 @@ bool Schedule::isSheduledTime(int hour, int minute)
 
 const String Schedule::filePath = "/schedule.json";
 
-ScheduleError Schedule::init()
+ScheduleErr::Value Schedule::init()
 {
-    FileResult<JsonDocument &> res = fileRepo.readJsonFile(filePath);
-    if (!res.isSuccess())
+    JsonDocument doc;
+    FileRepoErr::Value fileErr = fileRepo.readJsonFile(filePath, doc);
+    if (fileErr != FileRepoErr::NO_ERROR)
     {
         logger.print("Failed to read schedule: ");
-        logger.println(res.error());
-        return ScheduleError::FILE_SCHEDULE_ERROR;
+        logger.println(fileErr);
+        return ScheduleErr::FILE_SCHEDULE_ERROR;
     }
-    JsonDocument doc = res.value();
     if (doc.isNull())
     {
-        return ScheduleError::NO_SCHEDULE_ERROR;
+        return ScheduleErr::NO_SCHEDULE_ERROR;
     }
     return setSchedule(doc);
 }
@@ -66,7 +66,7 @@ String Schedule::getScheduleJson()
  * @param doc The JSON document containing the schedule times
  * @return NO_ERROR on success
  */
-ScheduleError Schedule::setSchedule(const JsonDocument &doc)
+ScheduleErr::Value Schedule::setSchedule(const JsonDocument &doc)
 {
     isSet = true;
     for (int i = 0; i < 6; i++)
@@ -74,5 +74,5 @@ ScheduleError Schedule::setSchedule(const JsonDocument &doc)
         timesList[i].hour = doc[i]["hour"].as<int>();
         timesList[i].minute = doc[i]["minute"].as<int>();
     }
-    return NO_ERROR;
+    return ScheduleErr::NO_ERROR;
 }

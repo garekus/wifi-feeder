@@ -3,16 +3,9 @@
   -H "Content-Type: application/json" \
   -d '{"ssid":"my_ssid","pwd":"my_password"}'
  */
-
-#include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <LittleFS.h>
-#include <ArduinoJson.h>
-#include <time.h>
+#include <WString.h>
 
 #include <credentials.h>
-#include <client_html.h>
 #include "file_repository.h"
 #include "wifi.h"
 #include "schedule.h"
@@ -29,7 +22,7 @@ WiFiConnection wifiConn = WiFiConnection(fileRepo, logger);
 NtpTime ntpTime = NtpTime(fileRepo, logger);
 Schedule schedule = Schedule(fileRepo, logger);
 Feeder feeder = Feeder();
-HttpServer httpServer = HttpServer(logger, wifiConn, ntpTime, feeder);
+HttpServer httpServer = HttpServer(logger, wifiConn, ntpTime, feeder, schedule);
 
 bool isInitialized = false;
 
