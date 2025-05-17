@@ -1,9 +1,8 @@
 
 #include "http_server.h"
-#include "client_html.h"
 
-HttpServer::HttpServer(Logger logger, WiFiConnection &wifiConn, NtpTime &ntpTime, Feeder &feeder, Schedule &schedule)
-    : logger(logger), wifiConn(wifiConn), ntpTime(ntpTime), feeder(feeder), schedule(schedule)
+HttpServer::HttpServer(Logger logger, FileRepo &fileRepo, WiFiConnection &wifiConn, NtpTime &ntpTime, Feeder &feeder, Schedule &schedule)
+    : logger(logger), fileRepo(fileRepo), wifiConn(wifiConn), ntpTime(ntpTime), feeder(feeder), schedule(schedule)
 {
     server = new ESP8266WebServer(80);
 }
@@ -11,6 +10,9 @@ HttpServer::HttpServer(Logger logger, WiFiConnection &wifiConn, NtpTime &ntpTime
 void HttpServer::init()
 {
     server->on("/", std::bind(&HttpServer::handleRoot, this));
+    server->on("/styles.css", HTTP_GET, std::bind(&HttpServer::handleCss, this));
+    server->on("/script.js", HTTP_GET, std::bind(&HttpServer::handleJs, this));
+
     server->on("/feed", std::bind(&HttpServer::handleFeed, this));
     server->on("/wifi", HTTP_POST, createJsonHandler(400, [this](const JsonDocument &body)
                                                      { this->handlePostWiFi(body); }));
@@ -33,7 +35,35 @@ void HttpServer::processRequests()
 
 void HttpServer::handleRoot()
 {
-    server->send(200, "text/html", clientHtml);
+    File file = fileRepo.openForRead("/index.html");
+    if (!file)
+    {
+        server->send(500, "text/plain", "File Not Found");
+        return;
+    }
+    server->send(200, "text/html", file);
+}
+
+void HttpServer::handleCss()
+{
+    File file = fileRepo.openForRead("/styles.css");
+    if (!file)
+    {
+        server->send(500, "text/plain", "File Not Found");
+        return;
+    }
+    server->send(200, "text/css", file);
+}
+
+void HttpServer::handleJs()
+{
+    File file = fileRepo.openForRead("/script.js");
+    if (!file)
+    {
+        server->send(500, "text/plain", "File Not Found");
+        return;
+    }
+    server->send(200, "text/javascript", file);
 }
 
 void HttpServer::handleFeed()
@@ -96,7 +126,8 @@ void HttpServer::handlePostWiFi(const JsonDocument &body)
 
 void HttpServer::handleGetWiFiStatus()
 {
-    String json = wifiConn.getStatusJson();
+    String json;
+    wifiConn.getStatusJson(json);
     server->send(200, "application/json", json);
 }
 void HttpServer::handleGetTimeStatus()

@@ -24,15 +24,16 @@ struct FileRepoErr
 template <typename T>
 using FileResult = Result<T, FileRepoErr>;
 
-class FileRepository
+class FileRepo
 {
 private:
     bool initialized = false;
     Logger logger;
 
 public:
-    FileRepository(Logger logger) : logger(logger) {};
+    FileRepo(Logger logger) : logger(logger) {};
     FileRepoErr::Value init();
+    File openForRead(const String &path);
     FileRepoErr::Value readJsonFile(const String &path, JsonDocument &doc);
     FileRepoErr::Value writeJsonFile(const String &path, const JsonDocument &doc);
 };

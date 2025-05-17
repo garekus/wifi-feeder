@@ -1,28 +1,37 @@
 #include "file_repository.h"
 
-FileRepoErr::Value FileRepository::init()
+FileRepoErr::Value FileRepo::init()
 {
     if (LittleFS.begin())
     {
-        this->initialized = true;
+        logger.println("file repo is initialized");
+        initialized = true;
         return FileRepoErr::NO_ERROR;
     }
-    else
-        return FileRepoErr::INIT_ERROR;
+    logger.print("file repo initialization error");
+    return FileRepoErr::INIT_ERROR;
 }
 
-FileRepoErr::Value FileRepository::readJsonFile(const String &path, JsonDocument &doc)
+File FileRepo::openForRead(const String &path)
 {
-    if (!this->initialized)
+    if (!initialized)
     {
-        return FileRepoErr::NOT_INITIALIZED_ERROR;
-    }
-    if (!LittleFS.exists(path))
-    {
-        return FileRepoErr::FILE_NOT_FOUND_ERROR;
+        logger.print("FileRepo not initialized on FileRepo::openForRead: ");
+        logger.println(path);
+        return File();
     }
 
-    File file = LittleFS.open(path, "r");
+    if (!LittleFS.exists(path))
+    {
+        return File();
+    }
+
+    return LittleFS.open(path, "r");
+}
+
+FileRepoErr::Value FileRepo::readJsonFile(const String &path, JsonDocument &doc)
+{
+    File file = openForRead(path);
     if (!file)
     {
         return FileRepoErr::FILE_OPEN_ERROR;
@@ -41,10 +50,12 @@ FileRepoErr::Value FileRepository::readJsonFile(const String &path, JsonDocument
     return FileRepoErr::NO_ERROR;
 }
 
-FileRepoErr::Value FileRepository::writeJsonFile(const String &path, const JsonDocument &doc)
+FileRepoErr::Value FileRepo::writeJsonFile(const String &path, const JsonDocument &doc)
 {
-    if (!this->initialized)
+    if (!initialized)
     {
+        logger.print("FileRepo not initialized on FileRepo::writeJsonFile: ");
+        logger.println(path);
         return FileRepoErr::NOT_INITIALIZED_ERROR;
     }
     File file = LittleFS.open(path, "w");

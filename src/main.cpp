@@ -17,12 +17,12 @@
 ESP8266WebServer server(80);
 
 Logger logger = Logger();
-FileRepository fileRepo = FileRepository(logger);
+FileRepo fileRepo = FileRepo(logger);
 WiFiConnection wifiConn = WiFiConnection(fileRepo, logger);
 NtpTime ntpTime = NtpTime(fileRepo, logger);
 Schedule schedule = Schedule(fileRepo, logger);
 Feeder feeder = Feeder();
-HttpServer httpServer = HttpServer(logger, wifiConn, ntpTime, feeder, schedule);
+HttpServer httpServer = HttpServer(logger, fileRepo, wifiConn, ntpTime, feeder, schedule);
 
 bool isInitialized = false;
 

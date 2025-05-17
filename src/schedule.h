@@ -30,10 +30,10 @@ public:
     String getScheduleJson();
     bool isSheduledTime(int hour, int minute);
     ScheduleErr::Value setSchedule(const JsonDocument &doc);
-    Schedule(FileRepository &fileRepo, Logger &logger);
+    Schedule(FileRepo &fileRepo, Logger &logger);
 
 private:
-    FileRepository &fileRepo;
+    FileRepo &fileRepo;
     Logger &logger;
     ScheduleTime timesList[6];
     bool isSet;

@@ -3,7 +3,7 @@
 
 #include "schedule.h"
 
-Schedule::Schedule(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger)
+Schedule::Schedule(FileRepo &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger)
 {
     isSet = false;
 }

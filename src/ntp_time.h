@@ -22,7 +22,7 @@ private:
     String currentTZ;
     // Default time zone (see "zones.json" from [github repo](https://github.com/nayarsystems/posix_tz_db))
     const String defaultTZ = "EET-2EEST,M3.5.0/3,M10.5.0/4";
-    FileRepository fileRepo;
+    FileRepo fileRepo;
     const String configPath = "/time.json";
     Logger &logger;
 
@@ -32,7 +32,7 @@ private:
     NtpTimeErr::Value tryToSyncTimeZone(String tz, int maxTimeoutSecs = 10);
 
 public:
-    NtpTime(FileRepository &fileRepo, Logger &logger);
+    NtpTime(FileRepo &fileRepo, Logger &logger);
     void init();
     NtpTimeErr::Value setTimeZone(String tz, int maxTimeoutSecs = 10);
     tm getTime();

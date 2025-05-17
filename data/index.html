@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ESP8266 Motor Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>ESP8266 Feeder</h1>
+    <div class="btn-container">
+        <button class="btn" onclick="feed()">Feed</button>
+    </div>
+
+    <div class="response-container">
+        <p>Status: <span id="responseText">Ready</span></p>
+    </div>
+
+    <!-- wifi config form -->
+    <div class="form-container">
+        <h2>WiFi Configuration</h2>
+        <form id="wifiForm">
+            <div class="form-group">
+                <label for="ssid">SSID:</label>
+                <input type="text" id="ssid" name="ssid" required>
+            </div>
+            <div class="form-group">
+                <label for="pwd">Password:</label>
+                <input type="password" id="pwd" name="pwd" required>
+            </div>
+            <button type="submit" class="btn">Save WiFi Configuration</button>
+        </form>
+        <div id="wifiResponse" class="response-message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

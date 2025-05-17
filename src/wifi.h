@@ -43,6 +43,7 @@ struct WiFiConfig
 {
     String ssid;
     String pwd;
+    IpConfig ipConf;
 };
 
 class WiFiConnection
@@ -51,7 +52,7 @@ private:
     static const char *config_path;
     static const WiFiConfig defaultConf;
     WiFiConfig currentConf;
-    FileRepository &fileRepo;
+    FileRepo &fileRepo;
     Logger &logger;
 
     WiFiErr::Value preserveCurrentConfig();
@@ -61,9 +62,9 @@ private:
     WiFiErr::Value tryPreservedConfig();
 
 public:
-    WiFiConnection(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
+    WiFiConnection(FileRepo &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
     WiFiErr::Value resetTo(const JsonDocument &doc);
-    String &getStatusJson();
+    void getStatusJson(String &dst);
     WiFiErr::Value init();
 };
 

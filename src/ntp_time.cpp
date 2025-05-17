@@ -7,7 +7,7 @@ bool isTimeValid(time_t t)
     return t > 86400; // 1 day in seconds
 }
 
-NtpTime::NtpTime(FileRepository &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
+NtpTime::NtpTime(FileRepo &fileRepo, Logger &logger) : fileRepo(fileRepo), logger(logger) {};
 
 void NtpTime::init()
 {
@@ -47,7 +47,7 @@ NtpTimeErr::Value NtpTime::loadPreservedConfig()
     FileRepoErr::Value res = fileRepo.readJsonFile(configPath, doc);
     if (res != FileRepoErr::NO_ERROR)
     {
-        logger.print("Failed to read time config");
+        logger.print("Failed to read time config: ");
         logger.println(res);
         return NtpTimeErr::CONFIG_READ_ERROR;
     }
