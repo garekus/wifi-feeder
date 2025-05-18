@@ -13,7 +13,7 @@
         <button class="btn" onclick="closeAllBlocks()">Home</button>
         <button class="btn" onclick="feed()">Feed</button>
         <button class="btn" onclick="toggleBlock('wifiConfigContainer')">Configure WiFi</button>
-        <button class="btn" onclick="toggleBlock('wifiStatusContainer', refreshWifiStatus)">Configure WiFi</button>
+        <button class="btn" onclick="toggleBlock('wifiStatusContainer', refreshWifiStatus)">WiFi status</button>
     </div>
 
     <!-- wifi config form -->
@@ -49,9 +49,9 @@
     </div>
 
     <!-- WiFi Status Display -->
-    <div class="form-container" id="wifiStatusContainer">
+    <div class="form-container" id="wifiStatusContainer" style="display: none;">
         <h2>WiFi Status</h2>
-        <div class="status-grid">
+        <div class=" status-grid">
             <div class="status-item">
                 <span class="status-label">SSID:</span>
                 <span id="currentSsid">-</span>
