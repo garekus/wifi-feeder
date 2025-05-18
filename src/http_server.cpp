@@ -208,11 +208,11 @@ void HttpServer::sendJson(int code, const JsonDocument &json)
 std::function<void(void)> HttpServer::createJsonHandler(unsigned int maxBodyLength, std::function<void(const JsonDocument &doc)> handler)
 {
     ESP8266WebServer *serv = this->server;
-    return [&serv, maxBodyLength, &handler](void)
+    Logger *logger = &this->logger;
+    return [serv, logger, maxBodyLength, handler](void)
     {
         JsonDocument response;
 
-        // Check body size
         if (!serv->hasArg("plain") ||
             serv->arg("plain").length() > maxBodyLength)
         {
@@ -223,7 +223,6 @@ std::function<void(void)> HttpServer::createJsonHandler(unsigned int maxBodyLeng
             return;
         }
 
-        // Parse JSON
         const String &body = serv->arg("plain");
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, body);
@@ -237,7 +236,6 @@ std::function<void(void)> HttpServer::createJsonHandler(unsigned int maxBodyLeng
             return;
         }
 
-        // Call the handler with the parsed document
         handler(doc);
     };
 };
