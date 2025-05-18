@@ -120,6 +120,11 @@ WiFiErr::Value WiFiConnection::connect()
 
     if (WiFi.status() == WL_CONNECTED)
     {
+        logger.println();
+        logger.print("Connected to ");
+        logger.print(WiFi.SSID());
+        logger.print(" with IP ");
+        logger.println(WiFi.localIP());
         return WiFiErr::NO_ERROR;
     }
 
