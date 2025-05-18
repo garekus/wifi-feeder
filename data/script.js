@@ -22,13 +22,14 @@ function toggleBlock(elId, fetchDataCallback) {
             fetchDataCallback();
         }
         container.style.display = 'block';
+        closeAllBlocks(elId);
     } else {
         container.style.display = 'none';
     }
 }
-function closeAllBlocks() {
+function closeAllBlocks(except) {
     currentBlock = '';
-    blocks.forEach(block => {
+    blocks.filter(elId => elId !== except).forEach(block => {
         document.getElementById(block).style.display = 'none';
     });
 }
