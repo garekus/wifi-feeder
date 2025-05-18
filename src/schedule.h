@@ -35,7 +35,7 @@ public:
 private:
     FileRepo &fileRepo;
     Logger &logger;
-    ScheduleTime timesList[6];
+    ScheduleTime timesList[5];
     bool isSet;
     static const String filePath;
 };

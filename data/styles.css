@@ -99,3 +99,20 @@ h1 {
     font-weight: bold;
     margin-right: 5px;
 }
+
+.schedule-entry {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.time-inputs input {
+    width: 60px;
+    padding: 5px;
+}

@@ -83,6 +83,10 @@ void HttpServer::handleFeed()
  * {
  *     ssid: string,
  *     pwd: string,
+ *     staticIp: string (optional),
+ *     gateway: string (optional),
+ *     subnet: string (optional),
+ *     dns1: string (optional)
  * }
  *
  * @param body The parsed JSON document from the request body

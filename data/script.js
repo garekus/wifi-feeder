@@ -1,4 +1,4 @@
-blocks = ['wifiConfigContainer', 'wifiStatusContainer'];
+blocks = ['wifiConfigContainer', 'wifiStatusContainer', 'scheduleContainer'];
 
 currentBlock = '';
 
@@ -66,6 +66,38 @@ document.getElementById('wifiForm').addEventListener('submit', function (e) {
         });
 });
 
+document.getElementById('scheduleForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = [];
+    // Create 5 time entries from form data
+    for (let i = 0; i < 5; i++) {
+        formData.push({
+            hour: parseInt(document.getElementsByName(`hour_${i}`)[0].value),
+            minute: parseInt(document.getElementsByName(`minute_${i}`)[0].value)
+        });
+    }
+
+    fetch('/schedule', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                setStatus('Schedule updated successfully!', 'success');
+            } else {
+                setStatus('Schedule update error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            setStatus('Schedule update error: ' + error.message, 'error');
+        });
+});
+
 // possible states: "success", "error" and "info"
 function setStatus(msg, state = "info") {
     document.getElementById('responseText').textContent = msg;
@@ -98,5 +130,35 @@ async function refreshWifiStatus() {
         .catch(error => {
             console.error('Error fetching WiFi status:', error);
             setStatus("Error fetching WiFi status" + error.message);
+        });
+}
+
+function loadSchedule() {
+    setStatus('Loading schedule...');
+    fetch('/schedule')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('scheduleEntries');
+            container.innerHTML = ''; // Clear existing entries
+
+            // Add each time slot
+            data.forEach((time, index) => {
+                const entry = document.createElement('div');
+                entry.className = 'form-group schedule-entry';
+                entry.innerHTML = `
+                    <label>Feeding Time ${index + 1}:</label>
+                    <div class="time-inputs">
+                        <input type="number" min="0" max="23" name="hour_${index}" value="${time.hour}" required> :
+                        <input type="number" min="0" max="59" name="minute_${index}" value="${time.minute}" required>
+                    </div>
+                `;
+                container.appendChild(entry);
+            });
+
+            setStatus('Schedule loaded', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            setStatus('Error loading schedule: ' + error.message, 'error');
         });
 }

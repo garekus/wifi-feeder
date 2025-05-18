@@ -13,7 +13,7 @@ bool Schedule::isSheduledTime(int hour, int minute)
     if (!isSet)
         return false;
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 5; i++)
     {
         if (timesList[i].hour == hour && timesList[i].minute == minute)
         {
@@ -45,7 +45,7 @@ String Schedule::getScheduleJson()
 {
     JsonDocument doc;
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 5; i++)
     {
         JsonObject timeObj = doc.add<JsonObject>();
         timeObj["hour"] = timesList[i].hour;
@@ -60,7 +60,7 @@ String Schedule::getScheduleJson()
 /**
  * @brief Set the schedule times from a JSON document
  *
- * The document should contain an array of six objects, each with "hour" and "minute" properties.
+ * The document should contain an array of five objects, each with "hour" and "minute" properties.
  * The times are stored in the timesList array.
  *
  * @param doc The JSON document containing the schedule times
@@ -69,7 +69,7 @@ String Schedule::getScheduleJson()
 ScheduleErr::Value Schedule::setSchedule(const JsonDocument &doc)
 {
     isSet = true;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 5; i++)
     {
         timesList[i].hour = doc[i]["hour"].as<int>();
         timesList[i].minute = doc[i]["minute"].as<int>();
