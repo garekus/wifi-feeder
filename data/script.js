@@ -1,23 +1,40 @@
+blocks = ['wifiConfigContainer', 'wifiStatusContainer'];
+
+currentBlock = '';
+
 function feed() {
-    document.getElementById('responseText').textContent = 'Sending request...';
+    setStatus('Feeding...');
     fetch('/feed')
         .then(response => response.text())
         .then(data => {
-            document.getElementById('responseText').textContent = data;
+            setStatus("Feed completed", "success");
         })
         .catch(error => {
             console.error('Error:', error);
-            document.getElementById('responseText').textContent = 'Error: ' + error.message;
+            setStatus('Error: ' + error.message, "error");
         });
+}
+
+function toggleBlock(elId, fetchDataCallback) {
+    const container = document.getElementById(elId);
+    if (container.style.display === 'none' || container.style.display === '') {
+        if (fetchDataCallback) {
+            fetchDataCallback();
+        }
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+    }
+}
+function closeAllBlocks() {
+    currentBlock = '';
+    blocks.forEach(block => {
+        document.getElementById(block).style.display = 'none';
+    });
 }
 
 document.getElementById('wifiForm').addEventListener('submit', function (e) {
     e.preventDefault();
-
-    const responseElem = document.getElementById('wifiResponse');
-    responseElem.textContent = 'Sending request...';
-    responseElem.className = 'response-message';
-    responseElem.style.display = 'block';
 
     const formData = {
         ssid: document.getElementById('ssid').value,
@@ -38,15 +55,47 @@ document.getElementById('wifiForm').addEventListener('submit', function (e) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                responseElem.textContent = 'WiFi configuration updated successfully!';
-                responseElem.className = 'response-message success';
+                setStatus('WiFi configuration updated successfully!', 'success');
             } else {
-                responseElem.textContent = 'Error: ' + data.message;
-                responseElem.className = 'response-message error';
+                setStatus('WiFi configuration error: ' + data.message, 'error');
             }
         })
         .catch(error => {
-            responseElem.textContent = 'Error: ' + error.message;
-            responseElem.className = 'response-message error';
+            setStatus('WiFi configuration error: ' + data.message, 'error');
         });
 });
+
+// possible states: "success", "error" and "info"
+function setStatus(msg, state = "info") {
+    document.getElementById('responseText').textContent = msg;
+    switch (state) {
+        case "success":
+            document.getElementById('responseText').className = 'response-message success';
+            break;
+        case "error":
+            document.getElementById('responseText').className = 'response-message error';
+            break;
+        case "info":
+            document.getElementById('responseText').className = 'response-message';
+            break;
+    }
+}
+
+async function refreshWifiStatus() {
+    setStatus("Fetching WiFi status...");
+    await fetch('/wifi')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('currentSsid').textContent = data.ssid;
+            document.getElementById('configuredSsid').textContent = data["configured ssid"];
+            document.getElementById('wifiStatus').textContent = data.status;
+            document.getElementById('wifiRssi').textContent = data.rssi + " dBm";
+            document.getElementById('wifiIp').textContent = data.ip;
+            document.getElementById('wifiMac').textContent = data.mac;
+            setStatus("Fetched WiFi status");
+        })
+        .catch(error => {
+            console.error('Error fetching WiFi status:', error);
+            setStatus("Error fetching WiFi status" + error.message);
+        });
+}

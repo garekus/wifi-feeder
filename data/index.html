@@ -10,15 +10,14 @@
 <body>
     <h1>ESP8266 Feeder</h1>
     <div class="btn-container">
+        <button class="btn" onclick="closeAllBlocks()">Home</button>
         <button class="btn" onclick="feed()">Feed</button>
-    </div>
-
-    <div class="response-container">
-        <p>Status: <span id="responseText">Ready</span></p>
+        <button class="btn" onclick="toggleBlock('wifiConfigContainer')">Configure WiFi</button>
+        <button class="btn" onclick="toggleBlock('wifiStatusContainer', refreshWifiStatus)">Configure WiFi</button>
     </div>
 
     <!-- wifi config form -->
-    <div class="form-container">
+    <div class="form-container" id="wifiConfigContainer" style="display: none;">
         <h2>WiFi Configuration</h2>
         <form id="wifiForm">
             <div class="form-group">
@@ -47,9 +46,43 @@
             </div>
             <button type="submit" class="btn">Save WiFi Configuration</button>
         </form>
-        <div id="wifiResponse" class="response-message"></div>
     </div>
 
+    <!-- WiFi Status Display -->
+    <div class="form-container" id="wifiStatusContainer">
+        <h2>WiFi Status</h2>
+        <div class="status-grid">
+            <div class="status-item">
+                <span class="status-label">SSID:</span>
+                <span id="currentSsid">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Configured SSID:</span>
+                <span id="configuredSsid">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Status:</span>
+                <span id="wifiStatus">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Signal Strength:</span>
+                <span id="wifiRssi">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">IP Address:</span>
+                <span id="wifiIp">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">MAC Address:</span>
+                <span id="wifiMac">-</span>
+            </div>
+        </div>
+        <button class="btn" onclick="refreshWifiStatus()">Refresh Status</button>
+    </div>
+
+    <div class="response-message">
+        <p>Status: <span id="responseText">Ready</span></p>
+    </div>
     <script src="script.js"></script>
 </body>
 
