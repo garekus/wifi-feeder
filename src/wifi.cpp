@@ -122,7 +122,7 @@ WiFiErr::Value WiFiConnection::connect()
     {
         logger.println();
         logger.print("Connected to ");
-        logger.print(WiFi.SSID());
+        logger.println(WiFi.SSID());
         return WiFiErr::NO_ERROR;
     }
 

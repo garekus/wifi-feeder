@@ -74,5 +74,14 @@ ScheduleErr::Value Schedule::setSchedule(const JsonDocument &doc)
         timesList[i].hour = doc[i]["hour"].as<int>();
         timesList[i].minute = doc[i]["minute"].as<int>();
     }
+
+    FileRepoErr::Value res = fileRepo.writeJsonFile(filePath, doc);
+    if (res != FileRepoErr::NO_ERROR)
+    {
+        logger.print("Failed to save schedule: ");
+        logger.println(res);
+        return ScheduleErr::FILE_SCHEDULE_ERROR;
+    }
+    logger.println("Schedule saved successfully!");
     return ScheduleErr::NO_ERROR;
 }

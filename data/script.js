@@ -1,4 +1,4 @@
-blocks = ['wifiConfigContainer', 'wifiStatusContainer', 'scheduleContainer'];
+blocks = ['wifiContainer', 'scheduleContainer'];
 
 currentBlock = '';
 

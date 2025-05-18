@@ -12,45 +12,12 @@
     <div class="btn-container">
         <button class="btn" onclick="closeAllBlocks()">Home</button>
         <button class="btn" onclick="feed()">Feed</button>
-        <button class="btn" onclick="toggleBlock('scheduleContainer', loadSchedule)">Configure Schedule</button>
-        <button class="btn" onclick="toggleBlock('wifiConfigContainer')">Configure WiFi</button>
-        <button class="btn" onclick="toggleBlock('wifiStatusContainer', refreshWifiStatus)">WiFi status</button>
+        <button class="btn" onclick="toggleBlock('scheduleContainer', loadSchedule)">Schedule</button>
+        <button class="btn" onclick="toggleBlock('wifiContainer', refreshWifiStatus)">WiFi</button>
     </div>
 
     <!-- wifi config form -->
-    <div class="form-container" id="wifiConfigContainer" style="display: none;">
-        <h2>WiFi Configuration</h2>
-        <form id="wifiForm">
-            <div class="form-group">
-                <label for="ssid">SSID:</label>
-                <input type="text" id="ssid" name="ssid" required>
-            </div>
-            <div class="form-group">
-                <label for="pwd">Password:</label>
-                <input type="password" id="pwd" name="pwd" required>
-            </div>
-            <div class="form-group">
-                <label for="staticIp">StaticIp:</label>
-                <input type="text" id="staticIp" name="staticIp">
-            </div>
-            <div class="form-group">
-                <label for="gateway">Gateway:</label>
-                <input type="text" id="gateway" name="gateway">
-            </div>
-            <div class="form-group">
-                <label for="subnet">Subnet:</label>
-                <input type="text" id="subnet" name="subnet">
-            </div>
-            <div class="form-group">
-                <label for="dns1">DNS:</label>
-                <input type="text" id="dns1" name="dns1">
-            </div>
-            <button type="submit" class="btn">Save WiFi Configuration</button>
-        </form>
-    </div>
-
-    <!-- Status Display -->
-    <div class="form-container" id="wifiStatusContainer" style="display: none;">
+    <div class="form-container" id="wifiContainer" style="display: none;">
         <h2>WiFi Status</h2>
         <div class=" status-grid">
             <div class="status-item">
@@ -79,6 +46,35 @@
             </div>
         </div>
         <button class="btn" onclick="refreshWifiStatus()">Refresh Status</button>
+
+        <h2>WiFi Configuration</h2>
+        <form id="wifiForm">
+            <div class="form-group">
+                <label for="ssid">SSID:</label>
+                <input type="text" id="ssid" name="ssid" required>
+            </div>
+            <div class="form-group">
+                <label for="pwd">Password:</label>
+                <input type="password" id="pwd" name="pwd" required>
+            </div>
+            <div class="form-group">
+                <label for="staticIp">StaticIp:</label>
+                <input type="text" id="staticIp" name="staticIp">
+            </div>
+            <div class="form-group">
+                <label for="gateway">Gateway:</label>
+                <input type="text" id="gateway" name="gateway">
+            </div>
+            <div class="form-group">
+                <label for="subnet">Subnet:</label>
+                <input type="text" id="subnet" name="subnet">
+            </div>
+            <div class="form-group">
+                <label for="dns1">DNS:</label>
+                <input type="text" id="dns1" name="dns1">
+            </div>
+            <button type="submit" class="btn">Save WiFi Configuration</button>
+        </form>
     </div>
 
     <!-- Schedule form -->
