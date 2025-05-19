@@ -1,4 +1,4 @@
-blocks = ['wifiContainer', 'scheduleContainer'];
+blocks = ['wifiContainer', 'scheduleContainer', 'timeContainer'];
 
 currentBlock = '';
 
@@ -104,7 +104,6 @@ document.getElementById('timeForm').addEventListener('submit', function (e) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                refreshTimeStatus();
                 setStatus('Time configuration updated successfully!', 'success');
             } else {
                 setStatus('Time configuration error: ' + data.message, 'error');
