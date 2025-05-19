@@ -25,6 +25,7 @@ private:
     FileRepo fileRepo;
     const String configPath = "/time.json";
     Logger &logger;
+    time_t lastSyncTime;
 
     NtpTimeErr::Value loadPreservedConfig();
     void preserveConfig();
@@ -37,6 +38,7 @@ public:
     NtpTimeErr::Value setTimeZone(String tz, int maxTimeoutSecs = 10);
     tm getTime();
     String getTimeStatusJson();
+    void syncTimeLoop();
 };
 
 #endif

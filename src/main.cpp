@@ -24,8 +24,6 @@ Schedule schedule = Schedule(fileRepo, logger);
 Feeder feeder = Feeder();
 HttpServer httpServer = HttpServer(logger, fileRepo, wifiConn, ntpTime, feeder, schedule);
 
-bool isInitialized = false;
-
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -39,8 +37,6 @@ void setup()
   feeder.init();
 
   httpServer.init();
-
-  isInitialized = true;
 }
 
 void loop()
@@ -52,6 +48,8 @@ void loop()
   {
     feeder.feed();
   }
+
+  ntpTime.syncTimeLoop();
 
   // Allow for background processing
   yield();

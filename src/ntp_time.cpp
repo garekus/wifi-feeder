@@ -1,6 +1,7 @@
 #include "ntp_time.h"
 
 #define TIMEZONE_KEY "timezone"
+#define SYNC_TIME_INTERVAL 14400 // 4 hours
 
 bool isTimeValid(time_t t)
 {
@@ -118,10 +119,21 @@ NtpTimeErr::Value NtpTime::tryToSyncTimeZone(String tz, int maxTimeoutSecs)
         return NtpTimeErr::TIME_SYNC_ERROR;
     }
 
+    lastSyncTime = now;
+
     struct tm timeinfo;
     localtime_r(&now, &timeinfo);
     logger.print("Current time: ");
     logger.println(asctime(&timeinfo));
 
     return NtpTimeErr::NO_ERROR;
+}
+
+void NtpTime::syncTimeLoop()
+{
+    time_t now = time(nullptr);
+    if (now - lastSyncTime > SYNC_TIME_INTERVAL)
+    {
+        tryToSyncTimeZone(currentTZ);
+    }
 }
