@@ -71,10 +71,13 @@ function refreshTimeStatus() {
     fetch('/time')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('time').textContent = data.hour + ":" + data.minute + ":" + data.second;
+            document.getElementById('currentTime').textContent = data.hour + ":" + data.minute + ":" + data.second;
+            document.getElementById('currentTZ').textContent = data.timezone;
             setStatus("Time fetched successfully");
         })
         .catch(error => {
+            document.getElementById('currentTime').textContent = "-";
+            document.getElementById('currentTZ').textContent = "-";
             console.error('Error fetching time:', error);
             setStatus("Error fetching time: " + error.message);
         });
