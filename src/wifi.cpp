@@ -26,7 +26,7 @@ WiFiErr::Value WiFiConnection::init()
 {
     WiFi.mode(WIFI_STA);
 
-    logger.println("Trying preserved config...");
+    logger.println("Trying preserved wifi config...");
     WiFiErr::Value res = tryPreservedConfig();
     if (res == WiFiErr::NO_ERROR)
         return res;

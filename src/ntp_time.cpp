@@ -18,6 +18,10 @@ void NtpTime::init()
         logger.println("Failed to load preserved time config, fallback to default");
     }
     err = tryToSyncTimeZone(currentTZ);
+    if (err == NtpTimeErr::NO_ERROR)
+    {
+        return;
+    }
     if (err != NtpTimeErr::NO_ERROR)
     {
         logger.print("Failed to sync preserved time, tz: " + currentTZ + ", fallback to default");
@@ -41,6 +45,8 @@ void NtpTime::preserveConfig()
     JsonDocument doc;
     doc[TIMEZONE_KEY] = currentTZ;
     fileRepo.writeJsonFile(configPath, doc);
+    logger.print("Saved time config: ");
+    logger.println(currentTZ);
 }
 NtpTimeErr::Value NtpTime::loadPreservedConfig()
 {
@@ -58,6 +64,8 @@ NtpTimeErr::Value NtpTime::loadPreservedConfig()
         return NtpTimeErr::CONFIG_READ_ERROR;
     }
     currentTZ = doc[TIMEZONE_KEY].as<String>();
+    logger.print("Loaded time config: ");
+    logger.println(currentTZ);
     return NtpTimeErr::NO_ERROR;
 }
 
