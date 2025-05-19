@@ -8,7 +8,7 @@ Schedule::Schedule(FileRepo &fileRepo, Logger &logger) : fileRepo(fileRepo), log
     isSet = false;
 }
 
-bool Schedule::isSheduledTime(int hour, int minute)
+bool Schedule::isFeedingTime(int hour, int minute)
 {
     if (!isSet)
         return false;
@@ -17,6 +17,8 @@ bool Schedule::isSheduledTime(int hour, int minute)
     {
         if (timesList[i].hour == hour && timesList[i].minute == minute)
         {
+            cleanIsFed();
+            isFed[i] = true;
             return true;
         }
     }
@@ -68,12 +70,13 @@ String Schedule::getScheduleJson()
  */
 ScheduleErr::Value Schedule::setSchedule(const JsonDocument &doc)
 {
-    isSet = true;
     for (int i = 0; i < 5; i++)
     {
         timesList[i].hour = doc[i]["hour"].as<int>();
         timesList[i].minute = doc[i]["minute"].as<int>();
     }
+    isSet = true;
+    cleanIsFed();
 
     FileRepoErr::Value res = fileRepo.writeJsonFile(filePath, doc);
     if (res != FileRepoErr::NO_ERROR)
@@ -84,4 +87,12 @@ ScheduleErr::Value Schedule::setSchedule(const JsonDocument &doc)
     }
     logger.println("Schedule saved successfully!");
     return ScheduleErr::NO_ERROR;
+}
+
+void Schedule::cleanIsFed()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        isFed[i] = false;
+    }
 }

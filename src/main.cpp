@@ -44,7 +44,7 @@ void loop()
   httpServer.processRequests();
 
   tm timeinfo = ntpTime.getTime();
-  if (schedule.isSheduledTime(timeinfo.tm_hour, timeinfo.tm_min))
+  if (schedule.isFeedingTime(timeinfo.tm_hour, timeinfo.tm_min))
   {
     feeder.feed();
   }

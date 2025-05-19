@@ -28,7 +28,7 @@ class Schedule
 public:
     ScheduleErr::Value init();
     String getScheduleJson();
-    bool isSheduledTime(int hour, int minute);
+    bool isFeedingTime(int hour, int minute);
     ScheduleErr::Value setSchedule(const JsonDocument &doc);
     Schedule(FileRepo &fileRepo, Logger &logger);
 
@@ -36,8 +36,10 @@ private:
     FileRepo &fileRepo;
     Logger &logger;
     ScheduleTime timesList[5];
+    bool isFed[5];
     bool isSet;
     static const String filePath;
+    void cleanIsFed();
 };
 
 #endif
