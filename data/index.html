@@ -14,6 +14,7 @@
         <button class="btn" onclick="feed()">Feed</button>
         <button class="btn" onclick="toggleBlock('scheduleContainer', loadSchedule)">Schedule</button>
         <button class="btn" onclick="toggleBlock('wifiContainer', refreshWifiStatus)">WiFi</button>
+        <button class="btn" onclick="toggleBlock('timeContainer', refreshTimeStatus)">Time</button>
     </div>
 
     <!-- wifi config form -->
@@ -87,6 +88,33 @@
             <button type="submit" class="btn">Save Schedule</button>
         </form>
     </div>
+
+    <div class="form-container" id="timeContainer" style="display: none;">
+        <h2>Time status</h2>
+        <div class=" status-grid">
+            <div class="status-item">
+                <span class="status-label">time:</span>
+                <span id="currentTime">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">timezone:</span>
+                <span id="currentTZ">-</span>
+            </div>
+        </div>
+        <button class="btn" onclick="refreshTimeStatus()">Refresh Status</button>
+
+        <h2>Time configuration</h2>
+        <form id="timeForm">
+            <div class="form-group">
+                <label for="timezone">TimeZone:</label>
+                <input type="text" id="timezone" name="timezone" required>
+                <a href="https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv">list of available
+                    timezones</a>
+            </div>
+            <button type="submit" class="btn">Save Time Configuration</button>
+        </form>
+    </div>
+
 
     <div class="response-message">
         <p>Status: <span id="responseText">Ready</span></p>

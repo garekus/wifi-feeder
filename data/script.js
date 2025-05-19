@@ -66,6 +66,47 @@ document.getElementById('wifiForm').addEventListener('submit', function (e) {
         });
 });
 
+function refreshTimeStatus() {
+    setStatus("Fetching time...");
+    fetch('/time')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('time').textContent = data.hour + ":" + data.minute + ":" + data.second;
+            setStatus("Time fetched successfully");
+        })
+        .catch(error => {
+            console.error('Error fetching time:', error);
+            setStatus("Error fetching time: " + error.message);
+        });
+}
+
+document.getElementById('timeForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const formData = {
+        timezone: document.getElementById('timezone').value
+    };
+
+    fetch('/time', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                setStatus('Time configuration updated successfully!', 'success');
+            } else {
+                setStatus('Time configuration error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            setStatus('Time configuration error: ' + error.message, 'error');
+        });
+})
+
 document.getElementById('scheduleForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
