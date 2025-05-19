@@ -15,7 +15,7 @@ bool Schedule::isFeedingTime(int hour, int minute)
 
     for (int i = 0; i < 5; i++)
     {
-        if (timesList[i].hour == hour && timesList[i].minute == minute)
+        if (timesList[i].hour == hour && timesList[i].minute == minute && !isFed[i])
         {
             cleanIsFed();
             isFed[i] = true;
