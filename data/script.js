@@ -66,12 +66,16 @@ document.getElementById('wifiForm').addEventListener('submit', function (e) {
         });
 });
 
+function printTimeItem(val) {
+    return val.toString().padStart(2, '0');
+}
+
 function refreshTimeStatus() {
     setStatus("Fetching time...");
     fetch('/time')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('currentTime').textContent = data.hour + ":" + data.minute + ":" + data.second;
+            document.getElementById('currentTime').textContent = printTimeItem(data.hour) + ":" + printTimeItem(data.minute) + ":" + printTimeItem(data.second);
             document.getElementById('currentTZ').textContent = data.timezone;
             setStatus("Time fetched successfully");
         })
@@ -100,6 +104,7 @@ document.getElementById('timeForm').addEventListener('submit', function (e) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
+                refreshTimeStatus();
                 setStatus('Time configuration updated successfully!', 'success');
             } else {
                 setStatus('Time configuration error: ' + data.message, 'error');
