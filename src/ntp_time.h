@@ -22,7 +22,7 @@ private:
     String currentTZ;
     // Default time zone (see "zones.json" from [github repo](https://github.com/nayarsystems/posix_tz_db))
     const String defaultTZ = "EET-2EEST,M3.5.0/3,M10.5.0/4";
-    FileRepo fileRepo;
+    FileRepo &fileRepo;
     const String configPath = "/time.json";
     Logger &logger;
     time_t lastSyncTime;

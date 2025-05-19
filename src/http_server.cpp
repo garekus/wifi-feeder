@@ -99,9 +99,7 @@ void HttpServer::handlePostWiFi(const JsonDocument &body)
     String pwd = body["pwd"] | "";
 
     logger.print("Received wifi config: ");
-    logger.print(ssid);
-    logger.print(" ");
-    logger.println(pwd);
+    logger.println(ssid);
 
     if (ssid.isEmpty() || ssid.length() > 150)
     {
