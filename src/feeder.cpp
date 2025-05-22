@@ -2,7 +2,7 @@
 
 #include "feeder.h"
 
-#define PROBE_PIN D7
+#define PROBE_PIN D7 // connected to gnd when feeder has rotated enough
 #define MOTOR_PIN D6
 
 Feeder::Feeder()
